@@ -1,0 +1,46 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block title %}Report Complaint{% endblock title %}
+
+{% block content %}
+{% include "include/sidebar.html"%}
+{% include "include/toastmessage.html" %}
+
+<div class="bg-gray-50 w-full h-screen">
+    <form action="/users/complaint/" method="post" enctype="multipart/form-data" class="grid md:grid-cols-2 gap-x-4 max-h-120 bg-gray-50 rounded-sm max-w-full h-screen p-4 sm:ml-64 mt-16 md:mt-14">
+        {% csrf_token %}
+        <div class="mb-2">
+            <label for="category" class="block mb-1 text-sm font-medium text-gray-950">Complaint Category</label>
+            <select name="category" id="category" class="bg-white px-3 py-2 border border-gray-380 text-gray-950 block text-sm rounded-sm w-full focus:outline-none focus:ring-blue-600 focus:border-blue-600">
+                {% if categories %}
+                    {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+        </div>
+        <div class="mb-2">
+            <label for="course_title" class="block mb-1 text-sm font-medium text-gray-950">Course Title</label>
+            <input type="text" class="bg-white px-3 py-2 border border-gray-380 text-black block text-sm rounded-sm w-full focus:outline-none focus:ring-blue-600 focus:border-blue-600" name="course_title" id="course_title" value="{{Complaint.course_title}}"/>
+        </div>
+        <div class="mb-2 w-full md:w-full">
+            <label for="course_lecturer" class="block mb-1 text-sm font-medium text-gray-950">Course Lecturer</label>
+            <input type="text" class="bg-white px-3 py-2 border border-gray-380 text-black block text-sm rounded-sm w-full focus:outline-none focus:ring-blue-600 focus:border-blue-600" name="course_lecturer" id="course_lecturer" value="{{Complaint.course_lecturer}}"/>
+        </div>
+        <div class="mb-2">
+            <label for="complaint_details" class="block mb-1 text-sm font-medium text-gray-950">Complaint Details</label>
+            <textarea id="complaint_details" rows="8" class="bg-white px-3 py-2 border border-gray-380 text-black block text-sm rounded-sm w-full focus:outline-none focus:ring-blue-600 focus:border-blue-600" name="complaint_details" id="complaint_details" value="{{Complaint.complaint_details}}"/></textarea>
+        </div>
+        <div class="mb-2">
+            <label for="file_upload" class="block mb-1 text-sm font-medium text-gray-950">Upload File</label>
+            <input type="file" class="bg-white px-3 py-2 border border-gray-380 text-black block text-sm rounded-sm w-full focus:outline-none focus:ring-blue-600 focus:border-blue-600" name="file_upload" id="file_upload" />
+        </div>
+        <div class="flex items-center md:ml-64 md:h-auto md:w-auto mt-5 md:my-5 justify-end">
+            <button type="submit" class="bg-teal-700 hover:bg-teal-950 text-xs font-medium text-white p-3 rounded-sm shadow-sm cursor-pointer">Submit Complaint</button>
+        </div>
+    </form>
+</div>  
+
+
+{% endblock content %}
