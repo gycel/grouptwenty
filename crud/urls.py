@@ -9,5 +9,5 @@ urlpatterns = [
     path('include/sidebar/', views.sidebar_view, name="sidebar"),
     path('users/add/', views.add_user, name="add_user"),
     path('users/complaint/', views.report_complaint, name="complaint"),
-    path('admin/manage/', views.manage_users, name="manage_users"),
+    path('administrator/manage/', views.manage_users, name="manage_users"),
 ]

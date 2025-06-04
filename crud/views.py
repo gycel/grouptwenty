@@ -18,6 +18,8 @@ def add_user(request):
         errors = {}
         if request.method == 'POST':
             full_name = request.POST.get('full_name', '')
+            year_level = request.POST.get('year_level', '')
+            class_section = request.POST.get('class_section', '')
             email = request.POST.get('email', '')
             student_number = request.POST.get('student_number', '')
             password = request.POST.get('password', '')
@@ -27,6 +29,10 @@ def add_user(request):
                 errors['full_name'] = 'Full Name is required.'
             if not email:
                 errors['email'] = 'Email is required.'
+            if not year_level:
+                errors['year_level'] = 'Year Level is required.'
+            if not class_section:
+                errors['class_section'] = 'Class Section is required.'
             if not student_number:
                 errors['student_number'] = 'Student Number is required.'
             if not password:
@@ -39,6 +45,8 @@ def add_user(request):
             if not errors:
                 Users.objects.create(
                     full_name=full_name,
+                    year_level=year_level,
+                    class_section=class_section,
                     email=email,
                     student_number=student_number,
                     password=make_password(password),
@@ -50,6 +58,8 @@ def add_user(request):
                 return render(request, 'users/AddUser.html', {
                     'errors': errors,
                     'full_name': full_name,
+                    'year_level': year_level,
+                    'class_section': class_section,
                     'email': email,
                     'student_number': student_number,
                     'password': password,
@@ -68,25 +78,22 @@ def manage_users(request):
             'users':  userObj
         }
 
-        return render(request, 'admin/ManageUsers.html', data)
+        return render(request, 'administrator/ManageUsers.html', data)
     except Exception as e:
         return HttpResponse(f'Error occured during load users: {e}')
 
 def report_complaint(request):
     if request.method == 'POST':
         try:
-            # Get form data
             category_id = request.POST.get('category')
             complaint_details = request.POST.get('complaint_details')
             uploaded_file = request.FILES.get('file_upload')
 
-            # Validate required fields
             if not category_id or not complaint_details:
                 messages.error(request, 'Please fill in all required fields.')
                 categories = Category.objects.all()
                 return render(request, 'users/Complaint.html', {'categories': categories})
 
-            # Save the complaint
             complaint = Complaint(
                 user=request.user,
                 category_id=category_id,
@@ -98,10 +105,8 @@ def report_complaint(request):
             messages.success(request, 'Complaint submitted successfully!')
             return render(request, 'users/Complaint.html', {'categories': Category.objects.all()})
         except Exception as e:
-            # Handle unexpected errors
             messages.error(request, f'An error occurred: {e}')
             return render(request, 'users/Complaint.html', {'categories': Category.objects.all()})
 
-    # Handle GET requests or other cases
     categories = Category.objects.all()
     return render(request, 'users/Complaint.html', {'categories': categories})
