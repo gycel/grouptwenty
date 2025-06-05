@@ -1,0 +1,123 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block title %}View Complaint{% endblock title %}
+
+{% block content %}
+
+{% include "include/adminsidebar.html" %}
+{% include "include/toastmessage.html" %}
+
+<div class="p-2 sm:ml-64 mt-16 md:mt-14 bg-gray-50">
+    <div class="max-w-4xl mx-auto p-6">
+        <!-- Back Button -->
+        <div class="mb-6">
+            <a href="{% url 'manage_complaints' %}" class="inline-flex items-center text-blue-600 hover:text-blue-800">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Back to Complaints
+            </a>
+        </div>
+
+        <!-- Complaint Details Card -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-start mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Complaint Details</h2>
+                <span class="px-3 py-1 rounded-full text-sm font-medium {% if complaint.status == 'Resolved' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                    {{ complaint.status }}
+                </span>
+            </div>
+
+            <!-- Student Information -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">Student Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-600">Full Name</p>
+                        <p class="text-base text-gray-900">{{ complaint.user_id.full_name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Student Number</p>
+                        <p class="text-base text-gray-900">{{ complaint.user_id.student_number }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Email</p>
+                        <p class="text-base text-gray-900">{{ complaint.user_id.email }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Year Level</p>
+                        <p class="text-base text-gray-900">{{ complaint.user_id.year_level }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Complaint Information -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">Complaint Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-600">Category</p>
+                        <p class="text-base text-gray-900">{{ complaint.category.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Course Title</p>
+                        <p class="text-base text-gray-900">{{ complaint.course_title }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Course Lecturer</p>
+                        <p class="text-base text-gray-900">{{ complaint.course_lecturer }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Submitted Date</p>
+                        <p class="text-base text-gray-900">{{ complaint.created_at|date:"F d, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Complaint Details -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">Complaint Details</h3>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <p class="text-gray-900 whitespace-pre-wrap">{{ complaint.complaint_details }}</p>
+                </div>
+            </div>
+
+            <!-- Evidence File -->
+            {% if complaint.evidence_file %}
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">Attached Evidence</h3>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <a href="{{ complaint.evidence_file.url }}" 
+                       target="_blank" 
+                       class="inline-flex items-center text-blue-600 hover:text-blue-800">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                        </svg>
+                        View Evidence File
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Status Update Form -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <form method="post" action="{% url 'update_complaint_status' complaint.complaint_id %}" class="flex items-center gap-4">
+                    {% csrf_token %}
+                    <div class="flex-1">
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Update Status</label>
+                        <select name="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="Pending" {% if complaint.status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="Resolved" {% if complaint.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="mt-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Update Status
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %} 

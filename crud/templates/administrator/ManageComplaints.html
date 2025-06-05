@@ -1,0 +1,124 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block title %}Manage Complaints{% endblock title %}
+
+{% block content %}
+
+{% include "include/adminsidebar.html" %}
+{% include "include/toastmessage.html" %}
+
+<div class="p-2 sm:ml-64 mt-16 md:mt-14 bg-gray-50 max-w-screen">
+    <div class="w-full h-screen bg-gray-50">
+        <!-- Category Filter -->
+        <div class="mb-4 p-4">
+            <form method="get" class="flex gap-4 items-center">
+                <select name="category" class="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"i" %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    Filter
+                </button>
+                {% if selected_category %}
+                    <a href="{% url 'manage_complaints' %}" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                        Clear Filter
+                    </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="bg-gray-50">
+            <div class="relative overflow-x-auto rounded-sm shadow-sm">
+                <table class="w-full" id="complaintsTable">
+                    <thead class="text-left text-xs text-gray-600 bg-gray-300 group">
+                        <tr>
+                            <th class="px-6 py-3">Category</th>
+                            <th class="px-6 py-3">Full Name</th>
+                            <th class="px-6 py-3">Course Title</th>
+                            <th class="px-6 py-3">Course Lecturer</th>
+                            <th class="px-6 py-3">Status</th>
+                            <th class="px-6 py-3">Submitted Date</th>
+                            <th class="px-6 py-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-xs text-black" id="complaintsTbody">
+                        {% for complaint in complaints %}
+                            <tr class="hover:bg-gray-100 border-b border-gray-200">
+                                <td class="px-6 py-4">{{ complaint.category.name }}</td>
+                                <td class="px-6 py-4">{{ complaint.user_id.full_name }}</td>
+                                <td class="px-6 py-4">{{ complaint.course_title }}</td>
+                                <td class="px-6 py-4">{{ complaint.course_lecturer }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2 py-1 rounded-full text-xs {% if complaint.status == 'Resolved' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                        {{ complaint.status }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">{{ complaint.created_at|date:"M d, Y" }}</td>
+                                <td class="px-6 py-4">
+                                    <a href="{% url 'view_complaint' complaint.complaint_id %}" 
+                                       class="text-blue-500 hover:text-blue-700">
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                    No complaints found
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if complaints.has_other_pages %}
+            <div class="flex justify-center mt-4 mb-4">
+                <nav class="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    {% if complaints.has_previous %}
+                        <a href="#" 
+                           data-page="1"
+                           class="pagination-link px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            First
+                        </a>
+                        <a href="#" 
+                           data-page="{{ complaints.previous_page_number }}"
+                           class="pagination-link px-3 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Previous
+                        </a>
+                    {% endif %}
+
+                    <span class="px-3 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                        Page <span class="current-page">{{ complaints.number }}</span> of <span class="total-pages">{{ complaints.paginator.num_pages }}</span>
+                    </span>
+
+                    {% if complaints.has_next %}
+                        <a href="#" 
+                           data-page="{{ complaints.next_page_number }}"
+                           class="pagination-link px-3 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Next
+                        </a>
+                        <a href="#" 
+                           data-page="{{ complaints.paginator.num_pages }}"
+                           class="pagination-link px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Last
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>            
+</div>
+
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'js/complaints_pagination.js' %}"></script>
+{% endblock %}

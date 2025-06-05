@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password, check_password
@@ -6,7 +6,8 @@ from .utils import login_required_custom
 from django.contrib.admin.views.decorators import staff_member_required
 from django.urls import reverse
 from django.contrib.auth import authenticate, login
-from .models import Admin, Users, ActivityLog, Complaint, Category
+from django.core.paginator import Paginator
+from .models import Admin, Users, ActivityLog, Complaint, Category, YearLevel, Sections
 
 def login_view(request):
     if request.method == 'POST':
@@ -17,7 +18,7 @@ def login_view(request):
             if check_password(password, user.password):
                 request.session['user_id'] = user.user_id
                 messages.success(request, 'Login successful!')
-                return redirect('users/complaint/')  
+                return redirect('users/dashboard/')  
             else:
                 messages.warning(request, 'Invalid password')
                 return render(request, 'layout/login.html')
@@ -27,12 +28,27 @@ def login_view(request):
     return render(request, 'layout/login.html')
 
 def register_user(request):
-    try:
+    YEAR_LEVELS = [
+        'First Year',
+        'Second Year',
+        'Third Year',
+        'Fourth Year'
+    ]
+    
+    SECTIONS = [
+        'BSCS-1A', 'BSCS-1B', 'BSCS-1C',
+        'BSIT-1A', 'BSIT-1B', 'BSIT-1C',
+        'BSIT-2A', 'BSIT-2B', 'BSIT-2C',
+        'BSIT-3A', 'BSIT-3B', 'BSIT-3C',
+        'BSIT-4A', 'BSIT-4B', 'BSIT-4C'
+    ]
+
+    if request.method == 'POST':
         errors = {}
         if request.method == 'POST':
             full_name = request.POST.get('full_name', '')
-            year_level = request.POST.get('year_level', '')
-            class_section = request.POST.get('class_section', '')
+            year_level_name = request.POST.get('year_level', '')
+            section_name = request.POST.get('class_section', '')
             email = request.POST.get('email', '')
             student_number = request.POST.get('student_number', '')
             password = request.POST.get('password', '')
@@ -42,9 +58,9 @@ def register_user(request):
                 errors['full_name'] = 'Full Name is required.'
             if not email:
                 errors['email'] = 'Email is required.'
-            if not year_level:
+            if not year_level_name:
                 errors['year_level'] = 'Year Level is required.'
-            if not class_section:
+            if not section_name:
                 errors['class_section'] = 'Class Section is required.'
             if not student_number:
                 errors['student_number'] = 'Student Number is required.'
@@ -56,46 +72,105 @@ def register_user(request):
                 errors['confirm_password'] = 'Passwords do not match.'
 
             if not errors:
-                Users.objects.create(
-                    full_name=full_name,
-                    year_level=year_level,
-                    class_section=class_section,
-                    email=email,
-                    student_number=student_number,
-                    password=make_password(password),
-                )
+                try:
+                    # Get or create year level
+                    year_level, _ = YearLevel.objects.get_or_create(
+                        name=year_level_name,
+                        defaults={'name': year_level_name}
+                    )
+                    
+                    # Get or create section
+                    section, _ = Sections.objects.get_or_create(
+                        name=section_name,
+                        defaults={'name': section_name}
+                    )
 
-                messages.success(request, 'User added successfully!')
-                return redirect('/layout/register/')
+                    Users.objects.create(
+                        full_name=full_name,
+                        year_level=year_level,
+                        class_section=section,
+                        email=email,
+                        student_number=student_number,
+                        password=make_password(password),
+                    )
+                    messages.success(request, 'User added successfully!')
+
+                    print("Redirecting to login...")
+                    return redirect('login')
+                except Exception as e:
+                    messages.error(request, f'Error creating user: {str(e)}')
+                    return redirect('/layout/register/')
             else:
-                return render(request, 'users/AddUser.html', {
+                return render(request, 'layout/register.html', {
                     'errors': errors,
                     'full_name': full_name,
-                    'year_level': year_level,
-                    'class_section': class_section,
+                    'year_level': year_level_name,
+                    'class_section': section_name,
                     'email': email,
                     'student_number': student_number,
                     'password': password,
-                    'confirm_password': confirm_password
+                    'confirm_password': confirm_password,
+                    'year_levels': YEAR_LEVELS,
+                    'sections': SECTIONS
                 })
-
-        return render(request, 'layout/Register.html')
-    except Exception as e:
-        return HttpResponse(f'Error occurred during add user: {e}')
+    else:
+        return render(request, 'layout/register.html', {
+            'year_levels': YEAR_LEVELS,
+            'sections': SECTIONS
+        })
 
 # Administrator Views
 @staff_member_required
 def manage_users(request):
     try:
         userObj = Users.objects.all().order_by('user_id')
+        total_complaints = Complaint.objects.count()
+        resolved_complaints = Complaint.objects.filter(status='Resolved').count()
 
         data = {
-            'users':  userObj
+            'users': userObj,
+            'total_complaints': total_complaints,
+            'resolved_complaints': resolved_complaints
         }
 
         return render(request, 'administrator/ManageUsers.html', data)
     except Exception as e:
         return HttpResponse(f'Error occured during load users: {e}')
+
+@staff_member_required
+def manage_complaints(request):
+    try:
+        # Get all categories for the filter dropdown
+        categories = Category.objects.all()
+        
+        # Get the selected category from the request
+        selected_category = request.GET.get('category')
+        
+        # Base queryset
+        complaints = Complaint.objects.select_related('user_id', 'category').all()
+        
+        # Apply category filter if selected
+        if selected_category:
+            complaints = complaints.filter(category_id=selected_category)
+        
+        # Order by complaint_id
+        complaints = complaints.order_by('-complaint_id')
+        
+        # Pagination
+        paginator = Paginator(complaints, 10)  # Show 10 complaints per page
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        context = {
+            'complaints': page_obj,
+            'categories': categories,
+            'selected_category': selected_category,
+        }
+        
+        return render(request, 'administrator/ManageComplaints.html', context)
+    except Exception as e:
+        return HttpResponse(f'Error occurred during load complaints: {e}')
+    
 
 # Users Views 
 @login_required_custom
@@ -143,10 +218,52 @@ def account_setting(request):
 def complaint_history(request):
     return render(request, 'users/ComplaintHistory.html')
 
+@login_required_custom
 def dashboard(request):
-    return render(request, 'users/Dashboard.html')
+    try:
+        user_id = request.session.get('user_id')
+        user = Users.objects.get(user_id=user_id)
+        total_complaints = Complaint.objects.filter(user_id=user).count()
+        resolved_complaints = Complaint.objects.filter(user_id=user, status='Resolved').count()
+
+        data = {
+            'user': user,
+            'total_complaints': total_complaints,
+            'resolved_complaints': resolved_complaints
+        }
+        return render(request, 'users/Dashboard.html', data)
+    except Exception as e:
+        return HttpResponse(f'Error occurred loading dashboard: {e}')
 
 def logout_view(request):
     request.session.flush()  # Clear all session data
     messages.success(request, 'You have been logged out successfully.')
     return redirect(reverse('login'))
+
+@staff_member_required
+def view_complaint(request, complaint_id):
+    try:
+        complaint = get_object_or_404(Complaint, complaint_id=complaint_id)
+        return render(request, 'administrator/ViewComplaint.html', {'complaint': complaint})
+    except Exception as e:
+        messages.error(request, f'Error loading complaint details: {e}')
+        return redirect('manage_complaints')
+
+@staff_member_required
+def update_complaint_status(request, complaint_id):
+    if request.method == 'POST':
+        try:
+            complaint = get_object_or_404(Complaint, complaint_id=complaint_id)
+            new_status = request.POST.get('status')
+            
+            if new_status in ['Pending', 'Resolved']:
+                complaint.status = new_status
+                complaint.save()
+                messages.success(request, f'Complaint status updated to {new_status}')
+            else:
+                messages.error(request, 'Invalid status value')
+                
+        except Exception as e:
+            messages.error(request, f'Error updating complaint status: {e}')
+            
+    return redirect('view_complaint', complaint_id=complaint_id)

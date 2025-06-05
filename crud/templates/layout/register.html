@@ -7,7 +7,7 @@
 {% include "include/toastmessage.html" %}
 
 <section class="bg-gray-50 dark:bg-gray-900">
-    <form action="layout/register/" method="post">
+    <form action="{% url 'register' %}" method="post">
         {% csrf_token %}
         <div class="flex flex-col items-center justify-center px-6 py-8 md:h-auto lg:py-0">
             <div class="flex-col items-center justify-center">
@@ -27,11 +27,21 @@
                     </div>
                     <div>
                         <label for="year_level" class="block mb-2 text-sm font-medium text-gray-900">Year Level</label>
-                        <input type="text" name="year_level" id="year_level" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-none dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="First Year" required="">
+                        <select name="year_level" id="year_level" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-none dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
+                            <option value="" disabled selected>Select Year Level</option>
+                            {% for year_level in year_levels %}
+                                <option value="{{ year_level }}" {% if year_level == year_level %}selected{% endif %}>{{ year_level }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div>
                         <label for="class_section" class="block mb-2 text-sm font-medium text-gray-900">Class Section</label>
-                        <input type="text" name="class_section" id="class_section" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-none dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="BSIT-1A" required="">
+                        <select name="class_section" id="class_section" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 bg-none dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
+                            <option value="" disabled selected>Select Class Section</option>
+                            {% for section in sections %}
+                                <option value="{{ section }}" {% if section == class_section %}selected{% endif %}>{{ section }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div>
                             <label for="email" class="block mb-2 text-sm font-medium text-gray-900">E-mail</label>
