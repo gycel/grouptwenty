@@ -1,9 +1,9 @@
 {% load static %}
 
-<div id="toast-container" class="fixed top-0 inset-x-0 z-50 flex flex-col items-center space-y-2 p-4">
+<div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col items-end space-y-2">
     {% for message in messages %}
         {% if message.tags == "success" %}
-            <div id="toast-success" class="flex ml-64 mt-16 items-center w-100 z-60 p-4 mb-4 text-gray-500 bg-white rounded-lg shadow-sm" role="alert">
+            <div id="toast-success-{{ forloop.counter }}" class="flex items-center w-100 z-60 p-4 mb-4 text-gray-500 bg-white rounded-lg shadow-sm" role="alert">
                 <div class="inline-flex items-center justify-center shrink-0 w-8 h-8 text-green-500 bg-green-200 rounded-lg">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M16.707 5.293a1 1 0 00-1.414 0L9 11.586 6.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l7-7a1 1 0 000-1.414z"/>
@@ -23,7 +23,7 @@
     
     {% for message in messages %}
         {% if message.tags == "warning" %}
-            <div id="toast-warning" class="flex ml-64 mt-16 items-center w-100 z-0 p-4 mb-4 text-gray-500 bg-white rounded-lg shadow-sm" role="alert">
+            <div id="toast-warning" class="flex items-center w-100 z-0 p-4 mb-4 text-gray-500 bg-white rounded-lg shadow-sm" role="alert">
                 <div class="inline-flex items-center justify-center shrink-0 w-8 h-8 text-red-500 bg-red-200 rounded-lg">
                     <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z"/>

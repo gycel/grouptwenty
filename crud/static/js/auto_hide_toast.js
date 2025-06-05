@@ -1,11 +1,10 @@
 setTimeout(() => {
-    const successToastMessage = document.getElementById('toast-success')
-    const warningToastMessage = document.getElementById('toast-warning')
-
-    if(successToastMessage) {
-        successToastMessage.style.display = 'none'
-    }
-    else {
-        warningToastMessage.style.display = 'none'
-    }
-}, 3000)
+    // Hide all success toasts
+    document.querySelectorAll('[id^="toast-success"]').forEach(el => {
+        el.style.display = 'none';
+    });
+    // Hide all warning toasts
+    document.querySelectorAll('#toast-warning').forEach(el => {
+        el.style.display = 'none';
+    });
+}, 3000);

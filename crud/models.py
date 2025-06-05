@@ -34,7 +34,7 @@ class Users(models.Model):
     )
     class_section = models.CharField(max_length=55, blank=False, null=True) 
     email = models.EmailField(max_length=55, blank=False)
-    password = models.CharField(max_length=55, blank=False)
+    password = models.CharField(max_length=128, blank=False)
     student_number = models.CharField(max_length=55, blank=False, unique=True)  
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -61,12 +61,14 @@ class Category(models.Model):
 
 # Complaint model
 class Complaint(models.Model):
+    user_id = models.ForeignKey(Users, on_delete=models.CASCADE) 
     complaint_id = models.BigAutoField(primary_key=True)
     user_id = models.ForeignKey(Users, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     course_title = models.CharField(max_length=55, blank=False)
     course_lecturer = models.CharField(max_length=55, blank=False)
     complaint_details = models.TextField(blank=False)
+    evidence_file = models.FileField(upload_to='complaint_evidence/', null=True, blank=True)    
     status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Resolved', 'Resolved')], default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
