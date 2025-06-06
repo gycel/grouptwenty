@@ -95,7 +95,6 @@ def register_user(request):
                     )
                     messages.success(request, 'User added successfully!')
 
-                    print("Redirecting to login...")
                     return redirect('login')
                 except Exception as e:
                     messages.error(request, f'Error creating user: {str(e)}')
@@ -171,6 +170,33 @@ def manage_complaints(request):
     except Exception as e:
         return HttpResponse(f'Error occurred during load complaints: {e}')
     
+@staff_member_required
+def view_complaint(request, complaint_id):
+    try:
+        complaint = get_object_or_404(Complaint, complaint_id=complaint_id)
+        return render(request, 'administrator/ViewComplaint.html', {'complaint': complaint})
+    except Exception as e:
+        messages.error(request, f'Error loading complaint details: {e}')
+        return redirect('manage_complaints')
+
+@staff_member_required
+def update_complaint_status(request, complaint_id):
+    if request.method == 'POST':
+        try:
+            complaint = get_object_or_404(Complaint, complaint_id=complaint_id)
+            new_status = request.POST.get('status')
+            
+            if new_status in ['Pending', 'Resolved']:
+                complaint.status = new_status
+                complaint.save()
+                messages.success(request, f'Complaint status updated to {new_status}')
+            else:
+                messages.error(request, 'Invalid status value')
+                
+        except Exception as e:
+            messages.error(request, f'Error updating complaint status: {e}')
+            
+    return redirect('view_complaint', complaint_id=complaint_id)
 
 # Users Views 
 @login_required_custom
@@ -239,31 +265,3 @@ def logout_view(request):
     request.session.flush()  # Clear all session data
     messages.success(request, 'You have been logged out successfully.')
     return redirect(reverse('login'))
-
-@staff_member_required
-def view_complaint(request, complaint_id):
-    try:
-        complaint = get_object_or_404(Complaint, complaint_id=complaint_id)
-        return render(request, 'administrator/ViewComplaint.html', {'complaint': complaint})
-    except Exception as e:
-        messages.error(request, f'Error loading complaint details: {e}')
-        return redirect('manage_complaints')
-
-@staff_member_required
-def update_complaint_status(request, complaint_id):
-    if request.method == 'POST':
-        try:
-            complaint = get_object_or_404(Complaint, complaint_id=complaint_id)
-            new_status = request.POST.get('status')
-            
-            if new_status in ['Pending', 'Resolved']:
-                complaint.status = new_status
-                complaint.save()
-                messages.success(request, f'Complaint status updated to {new_status}')
-            else:
-                messages.error(request, 'Invalid status value')
-                
-        except Exception as e:
-            messages.error(request, f'Error updating complaint status: {e}')
-            
-    return redirect('view_complaint', complaint_id=complaint_id)
