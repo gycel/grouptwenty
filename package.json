@@ -1,5 +1,4 @@
 {
-
   "scripts": {
     "tailwind": "@tailwindcss -i ./crud/static/css/input.css -o ./crud/static/css/output.css --watch"
   },

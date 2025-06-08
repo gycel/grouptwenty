@@ -1,9 +1,38 @@
 {% extends "layout/base.html" %}
 
-{% block title %}Account Setting{% endblock title %}
+{% block title %}Account Settings{% endblock title %}
 
 {% block content %}
 {% include "include/sidebar.html"%}
 {% include "include/toastmessage.html" %}
 
+<div class="bg-gray-100 min-h-screen py-8 ml-64">
+  <div class="w-full px-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6 mt-8 text-left">Account Settings</h1>
+    <div class="bg-white rounded-lg shadow p-6 w-full">
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        <div>
+          <label for="full_name" class="block text-sm font-medium text-gray-700">Full Name</label>
+          <input type="text" name="full_name" id="full_name" value="{{ user.full_name }}" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+        </div>
+        <div>
+          <label for="current_password" class="block text-sm font-medium text-gray-700">Current Password</label>
+          <input type="password" name="current_password" id="current_password" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div>
+          <label for="new_password" class="block text-sm font-medium text-gray-700">New Password</label>
+          <input type="password" name="new_password" id="new_password" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div>
+          <label for="confirm_password" class="block text-sm font-medium text-gray-700">Confirm New Password</label>
+          <input type="password" name="confirm_password" id="confirm_password" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div class="flex justify-end">
+          <button type="submit" class="px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-700">Update Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock content %}

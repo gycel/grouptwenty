@@ -9,38 +9,47 @@ Manage Users
 {% include "include/adminsidebar.html" %}
 {% include "include/toastmessage.html" %}
 
-<div class="p-2 sm:ml-64 mt-16 md:mt-14 bg-gray-50 max-w-screen">
-    <div class="mb-4">
-        <input
-            type="text"
-            id="searchInput"
-            placeholder="Search by Full Name..."
-            class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-        >
+<div class="p-2 sm:ml-64 mt-16 md:mt-14 bg-gray-50 min-h-screen">
+    <div class="flex justify-between items-center p-4">
+        <h2 class="text-3xl font-bold text-gray-800">Users</h2>
+        <form method="get" class="w-full max-w-md" id="searchForm">
+            <input
+                type="text"
+                id="searchInput"
+                name="search"
+                value="{{ search_query|default:'' }}"
+                placeholder="Search"
+                class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+        </form>
     </div> 
-    <div class="w-full h-screen bg-gray-50">
-        <div class="">
-            <div class=" bg-gray-50">
-                <div class="relative overflow-x-auto rounded-sm shadow-sm">
+    <div class="w-full bg-gray-50 flex-grow">
+        <div class="p-4 h-[calc(100vh-12rem)]">
+            <div class="bg-white rounded-lg shadow h-full flex flex-col">
+                <div class="overflow-x-auto flex-grow">
                     <table class="w-full" id="usersTable">
-                        <thead class="text-left text-xs text-gray-600 bg-gray-300 group">
+                        <thead class="text-left text-xs text-white bg-black sticky top-0">
                             <tr>
-                                <th class="px-6 py-3">Full Name</th>
-                                <th class="px-6 py-3">E-mail</th>
-                                <th class="px-6 py-3">Student Number</th>
-                                <th class="px-6 py-3">Action</th>
+                                <th class="px-6 py-4">Full Name</th>
+                                <th class="px-6 py-4">Student Number</th>
+                                <th class="px-6 py-4">Email</th>
+                                <th class="px-6 py-4">Year Level</th>
+                                <th class="px-6 py-4">Class Section</th>
+                                <th class="px-6 py-4">Action</th>
                             </tr>
                         </thead>
-                        <tbody class="text-xs text-black" id="usersTbody">
+                        <tbody class="text-sm text-black divide-y divide-gray-200" id="usersTbody">
                             {% for user in users %}
-                                <tr class="hover:bg-gray-100 border-b border-gray-200">
-                                    <td class="px-6 py-3">{{ user.full_name }}</td>
-                                    <td class="px-6 py-3">{{ user.email }}</td>
-                                    <td class="px-6 py-3">{{ user.student_number }}</td>
-                                    <td class="px-6 py-3">
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4">{{ user.full_name }}</td>
+                                    <td class="px-6 py-4">{{ user.student_number }}</td>
+                                    <td class="px-6 py-4">{{ user.email }}</td>
+                                    <td class="px-6 py-4">{{ user.year_level }}</td>
+                                    <td class="px-6 py-4">{{ user.class_section }}</td>
+                                    <td class="px-6 py-4">
                                         <div class="inline-flex shadow-sm">
-                                            <a href="#" class="px-3 py-2.5 font-medium text-sm text-black rounded-s-sm hover:bg-green-700 hover:outline-none">Edit</a>
-                                            <a href="#" class="px-3 py-2.5 font-medium text-sm text-black rounded-s-sm hover:bg-red-700 hover:outline-none">Delete</a>
+                                            <a href="{% url 'edit_user' user.user_id %}" class="px-3 py-2 font-medium text-sm text-black rounded-s-sm hover:bg-green-700 hover:text-white transition-colors">Edit</a>
+                                            <a href="javascript:void(0);" onclick="confirmDelete('{{ user.user_id }}')" class="px-3 py-2 font-medium text-sm text-black rounded-s-sm hover:bg-red-700 hover:text-white transition-colors">Delete</a>
                                         </div>
                                     </td>
                                 </tr>
@@ -48,8 +57,39 @@ Manage Users
                         </tbody>
                     </table>
                 </div>
+                <!-- Pagination Controls -->
+                <div class="flex justify-center p-4 border-t mt-auto">
+                    <nav class="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        {% if page_obj.has_previous %}
+                            <a href="?search={{ search_query }}&page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Previous</a>
+                        {% else %}
+                            <span class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">Previous</span>
+                        {% endif %}
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-100 text-sm font-medium text-blue-600">{{ num }}</span>
+                            {% else %}
+                                <a href="?search={{ search_query }}&page={{ num }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        {% if page_obj.has_next %}
+                            <a href="?search={{ search_query }}&page={{ page_obj.next_page_number }}" class="relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Next</a>
+                        {% else %}
+                            <span class="relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">Next</span>
+                        {% endif %}
+                    </nav>
+                </div>
             </div>
         </div>
     </div>
+</div>
+
+<script>
+    function confirmDelete(userId) {
+        if (confirm('Are you sure you want to delete this user and all associated complaints?')) {
+            window.location.href = `/delete_user/${userId}/`;
+        }
+    }
+</script>
 
 {% endblock content %}

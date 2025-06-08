@@ -109,7 +109,7 @@ class Complaint(models.Model):
     course_lecturer = models.CharField(max_length=55, blank=False)
     complaint_details = models.TextField(blank=False)
     evidence_file = models.FileField(upload_to='complaint_evidence/', null=True, blank=True)    
-    status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Resolved', 'Resolved')], default='Pending')
+    status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('On-going', 'On-going'), ('Resolved', 'Resolved')], default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

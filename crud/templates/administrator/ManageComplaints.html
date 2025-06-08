@@ -10,10 +10,14 @@
 
 <div class="p-2 sm:ml-64 mt-16 md:mt-14 bg-gray-50 max-w-screen">
     <div class="w-full h-screen bg-gray-50">
-        <!-- Category Filter -->
-        <div class="mb-4 p-4">
-            <form method="get" class="flex gap-4 items-center">
-                <select name="category" class="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
+        <!-- Header and Category Filter -->
+        <div class="flex justify-between items-center p-4">
+            <h2 class="text-3xl font-bold text-gray-800">Manage Complaints</h2>
+            <div class="text-lg font-semibold text-gray-700">
+                Total Complaints: <span class="text-blue-600">{{ total_complaints }}</span>
+            </div>
+            <form method="get" class="flex gap-4 items-center" id="categoryFilterForm">
+                <select name="category" class="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white shadow-sm" onchange="document.getElementById('categoryFilterForm').submit();">
                     <option value="">All Categories</option>
                     {% for category in categories %}
                         <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"i" %}selected{% endif %}>
@@ -21,21 +25,19 @@
                         </option>
                     {% endfor %}
                 </select>
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                    Filter
-                </button>
-                {% if selected_category %}
-                    <a href="{% url 'manage_complaints' %}" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400">
-                        Clear Filter
-                    </a>
-                {% endif %}
+                <select name="status" class="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white shadow-sm" onchange="document.getElementById('categoryFilterForm').submit();">
+                    <option value="">All Status</option>
+                    <option value="Pending" {% if selected_status == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="On-going" {% if selected_status == 'On-going' %}selected{% endif %}>On-going</option>
+                    <option value="Resolved" {% if selected_status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                </select>
             </form>
         </div>
 
         <div class="bg-gray-50">
             <div class="relative overflow-x-auto rounded-sm shadow-sm">
                 <table class="w-full" id="complaintsTable">
-                    <thead class="text-left text-xs text-gray-600 bg-gray-300 group">
+                    <thead class="text-left text-xs text-white bg-black group">
                         <tr>
                             <th class="px-6 py-3">Category</th>
                             <th class="px-6 py-3">Full Name</th>
@@ -54,7 +56,11 @@
                                 <td class="px-6 py-4">{{ complaint.course_title }}</td>
                                 <td class="px-6 py-4">{{ complaint.course_lecturer }}</td>
                                 <td class="px-6 py-4">
-                                    <span class="px-2 py-1 rounded-full text-xs {% if complaint.status == 'Resolved' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                    <span class="px-2 py-1 rounded-full text-xs
+                                        {% if complaint.status == 'Resolved' %}bg-green-100 text-green-800
+                                        {% elif complaint.status == 'On-going' %}bg-blue-100 text-blue-600
+                                        {% else %}bg-yellow-100 text-yellow-800
+                                        {% endif %}">
                                         {{ complaint.status }}
                                     </span>
                                 </td>
@@ -79,36 +85,24 @@
 
             <!-- Pagination -->
             {% if complaints.has_other_pages %}
-            <div class="flex justify-center mt-4 mb-4">
+            <div class="flex justify-center mt-6">
                 <nav class="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                     {% if complaints.has_previous %}
-                        <a href="#" 
-                           data-page="1"
-                           class="pagination-link px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                            First
-                        </a>
-                        <a href="#" 
-                           data-page="{{ complaints.previous_page_number }}"
-                           class="pagination-link px-3 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                            Previous
-                        </a>
+                        <a href="?page={{ complaints.previous_page_number }}" class="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Previous</a>
+                    {% else %}
+                        <span class="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">Previous</span>
                     {% endif %}
-
-                    <span class="px-3 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                        Page <span class="current-page">{{ complaints.number }}</span> of <span class="total-pages">{{ complaints.paginator.num_pages }}</span>
-                    </span>
-
+                    {% for num in complaints.paginator.page_range %}
+                        {% if complaints.number == num %}
+                            <span class="relative inline-flex items-center px-3 py-2 border border-gray-300 bg-blue-100 text-sm font-medium text-blue-600">{{ num }}</span>
+                        {% else %}
+                            <a href="?page={{ num }}" class="relative inline-flex items-center px-3 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
                     {% if complaints.has_next %}
-                        <a href="#" 
-                           data-page="{{ complaints.next_page_number }}"
-                           class="pagination-link px-3 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                            Next
-                        </a>
-                        <a href="#" 
-                           data-page="{{ complaints.paginator.num_pages }}"
-                           class="pagination-link px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                            Last
-                        </a>
+                        <a href="?page={{ complaints.next_page_number }}" class="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Next</a>
+                    {% else %}
+                        <span class="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">Next</span>
                     {% endif %}
                 </nav>
             </div>

@@ -8,6 +8,8 @@ from django.urls import reverse
 from django.contrib.auth import authenticate, login
 from django.core.paginator import Paginator
 from .models import Admin, Users, ActivityLog, Complaint, Category, YearLevel, Sections
+from django.db.models import Q, Case, When, IntegerField
+from django.contrib.messages import error as messages_error
 
 def login_view(request):
     if request.method == 'POST':
@@ -122,19 +124,32 @@ def register_user(request):
 @staff_member_required
 def manage_users(request):
     try:
+        search_query = request.GET.get('search', '').strip()
         userObj = Users.objects.all().order_by('user_id')
+        if search_query:
+            userObj = userObj.filter(
+                Q(full_name__icontains=search_query) |
+                Q(email__icontains=search_query) |
+                Q(student_number__icontains=search_query) |
+                Q(year_level__name__icontains=search_query)
+            )
+        paginator = Paginator(userObj, 15)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
         total_complaints = Complaint.objects.count()
         resolved_complaints = Complaint.objects.filter(status='Resolved').count()
 
         data = {
-            'users': userObj,
+            'users': page_obj,
+            'page_obj': page_obj,
             'total_complaints': total_complaints,
-            'resolved_complaints': resolved_complaints
+            'resolved_complaints': resolved_complaints,
+            'search_query': search_query,
         }
 
         return render(request, 'administrator/ManageUsers.html', data)
     except Exception as e:
-        return HttpResponse(f'Error occured during load users: {e}')
+        return HttpResponse(f'Error occurred during load users: {e}')
 
 @staff_member_required
 def manage_complaints(request):
@@ -142,8 +157,9 @@ def manage_complaints(request):
         # Get all categories for the filter dropdown
         categories = Category.objects.all()
         
-        # Get the selected category from the request
+        # Get the selected category and status from the request
         selected_category = request.GET.get('category')
+        selected_status = request.GET.get('status')
         
         # Base queryset
         complaints = Complaint.objects.select_related('user_id', 'category').all()
@@ -151,19 +167,26 @@ def manage_complaints(request):
         # Apply category filter if selected
         if selected_category:
             complaints = complaints.filter(category_id=selected_category)
+        # Apply status filter if selected
+        if selected_status:
+            complaints = complaints.filter(status=selected_status)
         
         # Order by complaint_id
         complaints = complaints.order_by('-complaint_id')
         
         # Pagination
-        paginator = Paginator(complaints, 10)  # Show 10 complaints per page
+        paginator = Paginator(complaints, 15)  # Show 15 complaints per page
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
+        
+        total_complaints = complaints.count()
         
         context = {
             'complaints': page_obj,
             'categories': categories,
             'selected_category': selected_category,
+            'selected_status': selected_status,
+            'total_complaints': total_complaints,
         }
         
         return render(request, 'administrator/ManageComplaints.html', context)
@@ -186,7 +209,7 @@ def update_complaint_status(request, complaint_id):
             complaint = get_object_or_404(Complaint, complaint_id=complaint_id)
             new_status = request.POST.get('status')
             
-            if new_status in ['Pending', 'Resolved']:
+            if new_status in ['Pending', 'On-going', 'Resolved']:
                 complaint.status = new_status
                 complaint.save()
                 messages.success(request, f'Complaint status updated to {new_status}')
@@ -197,6 +220,78 @@ def update_complaint_status(request, complaint_id):
             messages.error(request, f'Error updating complaint status: {e}')
             
     return redirect('view_complaint', complaint_id=complaint_id)
+
+@staff_member_required
+def edit_user(request, user_id):
+    try:
+        user = get_object_or_404(Users, user_id=user_id)
+        year_levels = YearLevel.objects.all()
+        sections = Sections.objects.all()
+
+        if request.method == 'POST':
+            full_name = request.POST.get('full_name', '').strip()
+            email = request.POST.get('email', '').strip()
+            student_number = request.POST.get('student_number', '').strip()
+            year_level_name = request.POST.get('year_level')
+            section_name = request.POST.get('class_section')
+
+            # Check if email is already taken by another user
+            if Users.objects.exclude(user_id=user_id).filter(email=email).exists():
+                messages.error(request, 'Email is already taken.')
+                return render(request, 'administrator/Edituser.html', {
+                    'user': user,
+                    'year_levels': year_levels,
+                    'sections': sections
+                })
+
+            # Check if student number is already taken by another user
+            if Users.objects.exclude(user_id=user_id).filter(student_number=student_number).exists():
+                messages.error(request, 'Student number is already taken.')
+                return render(request, 'administrator/Edituser.html', {
+                    'user': user,
+                    'year_levels': year_levels,
+                    'sections': sections
+                })
+
+            try:
+                # Get or create year level
+                year_level, _ = YearLevel.objects.get_or_create(
+                    name=year_level_name,
+                    defaults={'name': year_level_name}
+                )
+                
+                # Get or create section
+                section, _ = Sections.objects.get_or_create(
+                    name=section_name,
+                    defaults={'name': section_name}
+                )
+
+                # Update user information
+                user.full_name = full_name
+                user.email = email
+                user.student_number = student_number
+                user.year_level = year_level
+                user.class_section = section
+                user.save()
+
+                messages.success(request, 'User updated successfully!')
+                return redirect('manage_users')
+            except Exception as e:
+                messages.error(request, f'Error updating user: {str(e)}')
+                return render(request, 'administrator/Edituser.html', {
+                    'user': user,
+                    'year_levels': year_levels,
+                    'sections': sections
+                })
+
+        return render(request, 'administrator/Edituser.html', {
+            'user': user,
+            'year_levels': year_levels,
+            'sections': sections
+        })
+    except Exception as e:
+        messages.error(request, f'Error updating user: {str(e)}')
+        return redirect('manage_users')
 
 # Users Views 
 @login_required_custom
@@ -209,22 +304,24 @@ def report_complaint(request):
             complaint_details = request.POST.get('complaint_details')
 
             if not category_id or not course_title or not course_lecturer or not complaint_details:
-                messages.error(request, "All fields are required.")
+                messages.error(request, "All fields except evidence are required.")
                 return redirect('/users/complaint/')
 
             # Get the Users instance for the logged-in user
             user_id = request.session.get('user_id')
             user = Users.objects.get(user_id=user_id)
 
+            # Get the evidence file if provided
             evidence_file = request.FILES.get('file_upload')
 
+            # Create the complaint
             complaint = Complaint(
-                user_id=user,  # Pass the Users instance
+                user_id=user,
                 category_id=category_id,
                 course_title=course_title,
                 course_lecturer=course_lecturer,
                 complaint_details=complaint_details,
-                evidence_file=evidence_file
+                evidence_file=evidence_file if evidence_file else None
             )
             complaint.save()
 
@@ -238,11 +335,61 @@ def report_complaint(request):
     categories = Category.objects.all()
     return render(request, 'users/Complaint.html', {'categories': categories})
 
+@login_required_custom
 def account_setting(request):
-    return render(request, 'users/AccountSetting.html')
+    try:
+        user_id = request.session.get('user_id')
+        user = Users.objects.get(user_id=user_id)
+        if request.method == 'POST':
+            full_name = request.POST.get('full_name', '').strip()
+            current_password = request.POST.get('current_password', '')
+            new_password = request.POST.get('new_password', '')
+            confirm_password = request.POST.get('confirm_password', '')
+            errors = {}
+            # Name update
+            if full_name:
+                user.full_name = full_name
+            # Password update
+            if current_password or new_password or confirm_password:
+                if not user.check_password(current_password):
+                    errors['current_password'] = 'Current password is incorrect.'
+                elif new_password != confirm_password:
+                    errors['new_password'] = 'New passwords do not match.'
+                elif not new_password:
+                    errors['new_password'] = 'New password cannot be empty.'
+                else:
+                    user.set_password(new_password)
+            if errors:
+                for k, v in errors.items():
+                    messages.error(request, v)
+            else:
+                user.save()
+                messages.success(request, 'Account updated successfully!')
+            return redirect('account_setting')
+        return render(request, 'users/AccountSetting.html', {'user': user})
+    except Exception as e:
+        return HttpResponse(f'Error occurred loading account settings: {e}')
 
+@login_required_custom
 def complaint_history(request):
-    return render(request, 'users/ComplaintHistory.html')
+    try:
+        user_id = request.session.get('user_id')
+        user = Users.objects.get(user_id=user_id)
+        complaints = Complaint.objects.filter(user_id=user).annotate(
+            status_priority=Case(
+                When(status='Pending', then=0),
+                When(status='On-going', then=1),
+                When(status='Resolved', then=2),
+                default=3,
+                output_field=IntegerField(),
+            )
+        ).order_by('status_priority', '-complaint_id')
+        paginator = Paginator(complaints, 10)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        return render(request, 'users/ComplaintHistory.html', {'complaints': page_obj, 'page_obj': page_obj, 'user': user})
+    except Exception as e:
+        return HttpResponse(f'Error occurred loading complaint history: {e}')
 
 @login_required_custom
 def dashboard(request):
@@ -250,12 +397,24 @@ def dashboard(request):
         user_id = request.session.get('user_id')
         user = Users.objects.get(user_id=user_id)
         total_complaints = Complaint.objects.filter(user_id=user).count()
-        resolved_complaints = Complaint.objects.filter(user_id=user, status='Resolved').count()
+        new_complaints = Complaint.objects.filter(user_id=user, status='Pending').count()
+        ongoing_complaints = Complaint.objects.filter(user_id=user, status='On-going').count()
+        closed_complaints = Complaint.objects.filter(user_id=user, status='Resolved').count()
+        complaints = Complaint.objects.filter(user_id=user).order_by('-complaint_id')
+
+        # Pagination: 10 per page
+        paginator = Paginator(complaints, 10)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
 
         data = {
             'user': user,
             'total_complaints': total_complaints,
-            'resolved_complaints': resolved_complaints
+            'new_complaints': new_complaints,
+            'ongoing_complaints': ongoing_complaints,
+            'closed_complaints': closed_complaints,
+            'complaints': page_obj,
+            'page_obj': page_obj,
         }
         return render(request, 'users/Dashboard.html', data)
     except Exception as e:
@@ -265,3 +424,11 @@ def logout_view(request):
     request.session.flush()  # Clear all session data
     messages.success(request, 'You have been logged out successfully.')
     return redirect(reverse('login'))
+
+def delete_user(request, user_id):
+    user = get_object_or_404(Users, user_id=user_id)
+    # Delete associated complaints
+    Complaint.objects.filter(user_id=user).delete()
+    # Delete the user
+    user.delete()
+    return redirect('manage_users')
