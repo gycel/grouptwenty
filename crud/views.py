@@ -5,7 +5,8 @@ from django.contrib.auth.hashers import make_password, check_password
 from .utils import login_required_custom
 from django.contrib.admin.views.decorators import staff_member_required
 from django.urls import reverse
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from .models import Admin, Users, ActivityLog, Complaint, Category, YearLevel, Sections
 from django.db.models import Q, Case, When, IntegerField
@@ -346,19 +347,25 @@ def account_setting(request):
             new_password = request.POST.get('new_password', '')
             confirm_password = request.POST.get('confirm_password', '')
             errors = {}
+
             # Name update
             if full_name:
                 user.full_name = full_name
+
             # Password update
             if current_password or new_password or confirm_password:
-                if not user.check_password(current_password):
+                if not current_password:
+                    errors['current_password'] = 'Current password is required.'
+                elif not user.check_password(current_password):
                     errors['current_password'] = 'Current password is incorrect.'
-                elif new_password != confirm_password:
-                    errors['new_password'] = 'New passwords do not match.'
                 elif not new_password:
-                    errors['new_password'] = 'New password cannot be empty.'
+                    errors['new_password'] = 'New password is required.'
+                elif new_password != confirm_password:
+                    errors['confirm_password'] = 'New passwords do not match.'
                 else:
                     user.set_password(new_password)
+                    user.save()
+
             if errors:
                 for k, v in errors.items():
                     messages.error(request, v)
@@ -368,7 +375,8 @@ def account_setting(request):
             return redirect('account_setting')
         return render(request, 'users/AccountSetting.html', {'user': user})
     except Exception as e:
-        return HttpResponse(f'Error occurred loading account settings: {e}')
+        messages.error(request, f'Error occurred loading account settings: {e}')
+        return redirect('account_setting')
 
 @login_required_custom
 def complaint_history(request):
@@ -421,7 +429,9 @@ def dashboard(request):
         return HttpResponse(f'Error occurred loading dashboard: {e}')
 
 def logout_view(request):
-    request.session.flush()  # Clear all session data
+    # Only clear student-specific session data
+    if 'user_id' in request.session:
+        del request.session['user_id']
     messages.success(request, 'You have been logged out successfully.')
     return redirect(reverse('login'))
 
@@ -432,3 +442,72 @@ def delete_user(request, user_id):
     # Delete the user
     user.delete()
     return redirect('manage_users')
+
+def admin_login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')  # Changed from email to username
+        password = request.POST.get('password')
+        
+        # First try to authenticate with the provided credentials
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            if user.is_staff or user.is_superuser:
+                login(request, user)
+                messages.success(request, 'Login successful!')
+                return redirect('manage_users')
+            else:
+                messages.warning(request, 'You do not have administrator privileges')
+        else:
+            messages.warning(request, 'Invalid username or password')
+            
+        return render(request, 'administrator/administrator.html')
+    
+    return render(request, 'administrator/administrator.html')
+
+def admin_signup(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if not all([username, email, password, confirm_password]):
+            messages.error(request, 'All fields are required')
+            return render(request, 'administrator/administratorsignup.html')
+
+        if password != confirm_password:
+            messages.error(request, 'Passwords do not match')
+            return render(request, 'administrator/administratorsignup.html')
+
+        # Check if username or email already exists
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Username already exists')
+            return render(request, 'administrator/administratorsignup.html')
+        
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'Email already exists')
+            return render(request, 'administrator/administratorsignup.html')
+
+        try:
+            # Create a new superuser with staff privileges
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                is_staff=True,  # This gives admin access
+                is_superuser=True  # This gives full admin privileges
+            )
+            messages.success(request, 'Admin account created successfully!')
+            return redirect('admin_login')
+        except Exception as e:
+            messages.error(request, f'Error creating admin account: {str(e)}')
+            return render(request, 'administrator/administratorsignup.html')
+
+    return render(request, 'administrator/administratorsignup.html')
+
+def admin_logout(request):
+    # Only clear admin-specific session data
+    logout(request)  # This clears the admin authentication
+    messages.success(request, 'You have been logged out successfully.')
+    return redirect('admin_login')

@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.hashers import make_password, check_password
 
 # Admin model
 class Admin(models.Model):
@@ -84,6 +85,13 @@ class Users(models.Model):
 
     def __str__(self):
         return f"{self.full_name} - {self.student_number}"
+
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+        self._password = raw_password
+
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password)
 
 class ActivityLog(models.Model):
     log_id = models.BigAutoField(primary_key=True)
