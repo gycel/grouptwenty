@@ -1,0 +1,148 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block title %}Admin Dashboard{% endblock title %}
+
+{% block content %}
+{% include "include/adminsidebar.html" %}
+{% include "include/toastmessage.html" %}
+
+<div class="p-2 sm:ml-64 mt-16 md:mt-14 bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8">Admin Dashboard</h1>
+        
+        <div class="grid grid-cols-1 gap-6">
+            <!-- Pie Charts Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Category Distribution Pie Chart -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-xl font-semibold mb-4">Category Distribution</h2>
+                    <div class="h-80">
+                        <canvas id="categoryPieChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Status Distribution Pie Chart -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-xl font-semibold mb-4">Status Distribution</h2>
+                    <div class="h-80">
+                        <canvas id="statusPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Year Level Monthly Statistics -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for year_level in year_levels %}
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-xl font-semibold mb-4">{{ year_level.name }} Monthly Complaints</h2>
+                    <div class="h-80">
+                        <canvas id="monthlyChart{{ forloop.counter }}"></canvas>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Category Distribution Pie Chart
+    const categoryCtx = document.getElementById('categoryPieChart').getContext('2d');
+    new Chart(categoryCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ category_data|safe }}.map(item => item.category__name),
+            datasets: [{
+                data: {{ category_data|safe }}.map(item => item.count),
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF',
+                    '#FF9F40'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+
+    // Status Distribution Pie Chart
+    const statusCtx = document.getElementById('statusPieChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ status_data|safe }}.map(item => item.status),
+            datasets: [{
+                data: {{ status_data|safe }}.map(item => item.count),
+                backgroundColor: [
+                    '#FFCE56',  // Pending
+                    '#4BC0C0',  // On-going
+                    '#36A2EB'   // Resolved
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+
+    // Monthly Statistics for each year level
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+    
+    const colors = ['#1a237e', '#283593', '#303f9f', '#3949ab'];  // Dark blue variants
+    
+    {% for year_level in year_levels %}
+    const monthlyCtx{{ forloop.counter }} = document.getElementById('monthlyChart{{ forloop.counter }}').getContext('2d');
+    new Chart(monthlyCtx{{ forloop.counter }}, {
+        type: 'bar',
+        data: {
+            labels: monthNames,
+            datasets: [{
+                label: 'Complaints',
+                data: {{ monthly_stats|safe }}[{{ forloop.counter0 }}].data,
+                backgroundColor: colors[{{ forloop.counter0 }}]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Complaints'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Month'
+                    }
+                }
+            }
+        }
+    });
+    {% endfor %}
+</script>
+{% endblock %} 

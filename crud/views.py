@@ -9,8 +9,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from .models import Admin, Users, ActivityLog, Complaint, Category, YearLevel, Sections
-from django.db.models import Q, Case, When, IntegerField
+from django.db.models import Q, Case, When, IntegerField, Count
+from django.db.models.functions import ExtractYear, ExtractMonth
 from django.contrib.messages import error as messages_error
+from django.db import models
 
 def login_view(request):
     if request.method == 'POST':
@@ -511,3 +513,52 @@ def admin_logout(request):
     logout(request)  # This clears the admin authentication
     messages.success(request, 'You have been logged out successfully.')
     return redirect('admin_login')
+
+@staff_member_required
+def admin_dashboard(request):
+    try:
+        # Get total complaints
+        total_complaints = Complaint.objects.count()
+        
+        # Get complaints by category for pie chart
+        category_data = Complaint.objects.values('category__name').annotate(count=Count('complaint_id'))
+        
+        # Get complaints by status for pie chart
+        status_data = Complaint.objects.values('status').annotate(count=Count('complaint_id'))
+        
+        # Get monthly complaints for each year level
+        year_levels = YearLevel.objects.all().order_by('name')
+        monthly_stats = []
+        
+        for year_level in year_levels:
+            monthly_data = Complaint.objects.filter(
+                user_id__year_level=year_level
+            ).annotate(
+                month=ExtractMonth('created_at')
+            ).values('month').annotate(
+                count=Count('complaint_id')
+            ).order_by('month')
+            
+            # Initialize all months with 0
+            month_counts = [0] * 12
+            
+            # Update with actual data
+            for data in monthly_data:
+                month_counts[data['month'] - 1] = data['count']
+            
+            monthly_stats.append({
+                'year_level': year_level.name,
+                'data': month_counts
+            })
+        
+        context = {
+            'total_complaints': total_complaints,
+            'category_data': list(category_data),
+            'status_data': list(status_data),
+            'monthly_stats': monthly_stats,
+            'year_levels': year_levels,
+        }
+        
+        return render(request, 'administrator/admin_dashboard.html', context)
+    except Exception as e:
+        return HttpResponse(f'Error occurred loading admin dashboard: {e}')
