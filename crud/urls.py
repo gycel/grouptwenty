@@ -23,4 +23,5 @@ urlpatterns = [
     path('users/dashboard/', views.dashboard, name="dashboard"),
     path('logout/', views.logout_view, name="logout"),
     path('delete_user/<int:user_id>/', views.delete_user, name='delete_user'),
+    path('administrator/generate-admin-report/', views.generate_admin_report, name='generate_admin_report'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

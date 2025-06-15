@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.3 (Python 3.13.2 on win32)" generated="2025-06-15T20:29:55.982460" rpa="false" schemaversion="5">
+<suite id="s1" name="Simple Admin Report" source="C:\xampp\htdocs\grouptwenty\robot_framework_reports\simple_admin_report.robot">
+<test id="s1-t1" name="Generate Admin Dashboard Report" line="18">
+<kw name="Open Browser And Login">
+<kw name="Open Browser" owner="SeleniumLibrary">
+<msg time="2025-06-15T20:29:56.582769" level="INFO">Opening browser 'chrome' to base url 'http://localhost:8000/administrator/'.</msg>
+<arg>${BASE_URL}/administrator/</arg>
+<arg>${BROWSER}</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<status status="PASS" start="2025-06-15T20:29:56.582550" elapsed="3.081192"/>
+</kw>
+<kw name="Maximize Browser Window" owner="SeleniumLibrary">
+<doc>Maximizes current browser window.</doc>
+<status status="PASS" start="2025-06-15T20:29:59.664417" elapsed="0.063562"/>
+</kw>
+<kw name="Sleep" owner="BuiltIn">
+<msg time="2025-06-15T20:30:01.729107" level="INFO">Slept 2 seconds.</msg>
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="PASS" start="2025-06-15T20:29:59.728329" elapsed="2.000968"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>name=username</arg>
+<arg>timeout=${TIMEOUT}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-06-15T20:30:01.729590" elapsed="0.079305"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-06-15T20:30:01.809244" level="INFO">Typing text 'aeron123456' into text field 'name=username'.</msg>
+<arg>name=username</arg>
+<arg>${ADMIN_USERNAME}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-06-15T20:30:01.809049" elapsed="0.175918"/>
+</kw>
+<kw name="Input Password" owner="SeleniumLibrary">
+<msg time="2025-06-15T20:30:01.986239" level="INFO">Typing password into text field 'name=password'.</msg>
+<msg time="2025-06-15T20:30:02.045760" level="INFO">Temporally setting log level to: NONE</msg>
+<arg>name=password</arg>
+<arg>${ADMIN_PASSWORD}</arg>
+<doc>Types the given password into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-06-15T20:30:01.985350" elapsed="0.147262"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-06-15T20:30:02.133321" level="INFO">Clicking button 'Log in'.</msg>
+<arg>Log in</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-06-15T20:30:02.132882" elapsed="0.157101"/>
+</kw>
+<kw name="Sleep" owner="BuiltIn">
+<msg time="2025-06-15T20:30:05.291069" level="INFO">Slept 3 seconds.</msg>
+<arg>3s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="PASS" start="2025-06-15T20:30:02.290236" elapsed="3.001246"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>xpath=//h1[contains(text(),'Admin Dashboard')]</arg>
+<arg>timeout=${TIMEOUT}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-06-15T20:30:05.292510" elapsed="18.018866"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-06-15T20:30:23.314274" level="INFO">Successfully logged in to admin panel</msg>
+<arg>Successfully logged in to admin panel</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-06-15T20:30:23.313449" elapsed="0.000968"/>
+</kw>
+<doc>Open browser and login to admin panel</doc>
+<status status="PASS" start="2025-06-15T20:29:56.581250" elapsed="26.733439"/>
+</kw>
+<kw name="Extract Dashboard Statistics And Charts">
+<kw name="Sleep" owner="BuiltIn">
+<msg time="2025-06-15T20:30:26.319324" level="INFO">Slept 3 seconds.</msg>
+<arg>3s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="PASS" start="2025-06-15T20:30:23.318405" elapsed="3.001077"/>
+</kw>
+<kw name="Get Text" owner="SeleniumLibrary">
+<msg time="2025-06-15T20:30:26.371015" level="INFO">${heading} = Admin Dashboard</msg>
+<var>${heading}</var>
+<arg>xpath=//h1[contains(text(),'Admin Dashboard')]</arg>
+<doc>Returns the text value of the element identified by ``locator``.</doc>
+<status status="PASS" start="2025-06-15T20:30:26.319757" elapsed="0.051363"/>
+</kw>
+<kw name="Get Text" owner="SeleniumLibrary">
+<msg time="2025-06-15T20:30:26.414976" level="INFO">${category_title} = Category Distribution</msg>
+<var>${category_title}</var>
+<arg>xpath=//h2[contains(text(),'Category Distribution')]</arg>
+<doc>Returns the text value of the element identified by ``locator``.</doc>
+<status status="PASS" start="2025-06-15T20:30:26.371617" elapsed="0.043467"/>
+</kw>
+<kw name="Get Text" owner="SeleniumLibrary">
+<msg time="2025-06-15T20:30:26.450544" level="INFO">${status_title} = Status Distribution</msg>
+<var>${status_title}</var>
+<arg>xpath=//h2[contains(text(),'Status Distribution')]</arg>
+<doc>Returns the text value of the element identified by ``locator``.</doc>
+<status status="PASS" start="2025-06-15T20:30:26.415476" elapsed="0.035194"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<msg time="2025-06-15T20:30:26.451924" level="INFO">${heading} = Admin Dashboard</msg>
+<arg>${heading}</arg>
+<doc>Makes a variable available everywhere within the scope of the current suite.</doc>
+<status status="PASS" start="2025-06-15T20:30:26.451164" elapsed="0.000923"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<msg time="2025-06-15T20:30:26.453053" level="INFO">${category_title} = Category Distribution</msg>
+<arg>${category_title}</arg>
+<doc>Makes a variable available everywhere within the scope of the current suite.</doc>
+<status status="PASS" start="2025-06-15T20:30:26.452492" elapsed="0.000698"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<msg time="2025-06-15T20:30:26.454069" level="INFO">${status_title} = Status Distribution</msg>
+<arg>${status_title}</arg>
+<doc>Makes a variable available everywhere within the scope of the current suite.</doc>
+<status status="PASS" start="2025-06-15T20:30:26.453536" elapsed="0.000678"/>
+</kw>
+<kw name="Capture Element Screenshot" owner="SeleniumLibrary">
+<msg time="2025-06-15T20:30:26.754501" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="category_chart.png"&gt;&lt;img src="category_chart.png" width="400px"&gt;&lt;/a&gt;</msg>
+<arg>id=categoryPieChart</arg>
+<arg>category_chart.png</arg>
+<doc>Captures a screenshot from the element identified by ``locator`` and embeds it into log file.</doc>
+<status status="PASS" start="2025-06-15T20:30:26.454564" elapsed="0.300198"/>
+</kw>
+<kw name="Capture Element Screenshot" owner="SeleniumLibrary">
+<msg time="2025-06-15T20:30:26.901757" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="status_chart.png"&gt;&lt;img src="status_chart.png" width="400px"&gt;&lt;/a&gt;</msg>
+<arg>id=statusPieChart</arg>
+<arg>status_chart.png</arg>
+<doc>Captures a screenshot from the element identified by ``locator`` and embeds it into log file.</doc>
+<status status="PASS" start="2025-06-15T20:30:26.755056" elapsed="0.147977"/>
+</kw>
+<kw name="Get Element Attribute" owner="SeleniumLibrary">
+<msg time="2025-06-15T20:30:26.954993" level="INFO">${category_data} = [{"category__name": "Bullying", "count": 8}, {"category__name": "Cheating", "count": 18}, {"category__name": "Others", "count": 12}, {"category__name": "Teacher-Related", "count": 9}]</msg>
+<var>${category_data}</var>
+<arg>xpath=//script[@id='category-data-json']</arg>
+<arg>textContent</arg>
+<doc>Returns the value of ``attribute`` from the element ``locator``.</doc>
+<status status="PASS" start="2025-06-15T20:30:26.904422" elapsed="0.050695"/>
+</kw>
+<kw name="Get Element Attribute" owner="SeleniumLibrary">
+<msg time="2025-06-15T20:30:26.993888" level="INFO">${status_data} = [{"status": "Pending", "count": 39}, {"status": "On-going", "count": 3}, {"status": "Resolved", "count": 5}]</msg>
+<var>${status_data}</var>
+<arg>xpath=//script[@id='status-data-json']</arg>
+<arg>textContent</arg>
+<doc>Returns the value of ``attribute`` from the element ``locator``.</doc>
+<status status="PASS" start="2025-06-15T20:30:26.955685" elapsed="0.038313"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<msg time="2025-06-15T20:30:26.995256" level="INFO">${category_data} = [{"category__name": "Bullying", "count": 8}, {"category__name": "Cheating", "count": 18}, {"category__name": "Others", "count": 12}, {"category__name": "Teacher-Related", "count": 9}]</msg>
+<arg>${category_data}</arg>
+<doc>Makes a variable available everywhere within the scope of the current suite.</doc>
+<status status="PASS" start="2025-06-15T20:30:26.994742" elapsed="0.000631"/>
+</kw>
+<kw name="Set Suite Variable" owner="BuiltIn">
+<msg time="2025-06-15T20:30:26.996067" level="INFO">${status_data} = [{"status": "Pending", "count": 39}, {"status": "On-going", "count": 3}, {"status": "Resolved", "count": 5}]</msg>
+<arg>${status_data}</arg>
+<doc>Makes a variable available everywhere within the scope of the current suite.</doc>
+<status status="PASS" start="2025-06-15T20:30:26.995670" elapsed="0.000522"/>
+</kw>
+<kw name="Create List" owner="BuiltIn">
+<msg time="2025-06-15T20:30:26.996879" level="INFO">${year_levels} = ['First Year', 'Second Year', 'Third Year', 'Fourth Year']</msg>
+<var>${year_levels}</var>
+<arg>First Year</arg>
+<arg>Second Year</arg>
+<arg>Third Year</arg>
+<arg>Fourth Year</arg>
+<doc>Returns a list containing given items.</doc>
+<status status="PASS" start="2025-06-15T20:30:26.996498" elapsed="0.000450"/>
+</kw>
+<kw name="Create List" owner="BuiltIn">
+<msg time="2025-06-15T20:30:26.997541" level="INFO">${canvas_ids} = ['monthlyChart1', 'monthlyChart2', 'monthlyChart3', 'monthlyChart4']</msg>
+<var>${canvas_ids}</var>
+<arg>monthlyChart1</arg>
+<arg>monthlyChart2</arg>
+<arg>monthlyChart3</arg>
+<arg>monthlyChart4</arg>
+<doc>Returns a list containing given items.</doc>
+<status status="PASS" start="2025-06-15T20:30:26.997232" elapsed="0.000378"/>
+</kw>
+<for flavor="IN RANGE">
+<iter>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>id=${canvas_ids[${index}]}</arg>
+<arg>10s</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-06-15T20:30:26.998696" elapsed="0.049944"/>
+</kw>
+<kw name="Sleep" owner="BuiltIn">
+<msg time="2025-06-15T20:30:28.049723" level="INFO">Slept 1 second.</msg>
+<arg>1s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="PASS" start="2025-06-15T20:30:27.049056" elapsed="1.000793"/>
+</kw>
+<kw name="Capture Element Screenshot" owner="SeleniumLibrary">
+<msg time="2025-06-15T20:30:28.232083" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="bar_graph_1.png"&gt;&lt;img src="bar_graph_1.png" width="400px"&gt;&lt;/a&gt;</msg>
+<arg>id=${canvas_ids[${index}]}</arg>
+<arg>bar_graph_${index+1}.png</arg>
+<doc>Captures a screenshot from the element identified by ``locator`` and embeds it into log file.</doc>
+<status status="PASS" start="2025-06-15T20:30:28.050042" elapsed="0.183247"/>
+</kw>
+<var name="${index}">0</var>
+<status status="PASS" start="2025-06-15T20:30:26.998382" elapsed="1.235120"/>
+</iter>
+<iter>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>id=${canvas_ids[${index}]}</arg>
+<arg>10s</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-06-15T20:30:28.234091" elapsed="0.024829"/>
+</kw>
+<kw name="Sleep" owner="BuiltIn">
+<msg time="2025-06-15T20:30:29.259931" level="INFO">Slept 1 second.</msg>
+<arg>1s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="PASS" start="2025-06-15T20:30:28.259268" elapsed="1.000795"/>
+</kw>
+<kw name="Capture Element Screenshot" owner="SeleniumLibrary">
+<msg time="2025-06-15T20:30:29.437406" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="bar_graph_2.png"&gt;&lt;img src="bar_graph_2.png" width="400px"&gt;&lt;/a&gt;</msg>
+<arg>id=${canvas_ids[${index}]}</arg>
+<arg>bar_graph_${index+1}.png</arg>
+<doc>Captures a screenshot from the element identified by ``locator`` and embeds it into log file.</doc>
+<status status="PASS" start="2025-06-15T20:30:29.260256" elapsed="0.177354"/>
+</kw>
+<var name="${index}">1</var>
+<status status="PASS" start="2025-06-15T20:30:28.233858" elapsed="1.203861"/>
+</iter>
+<iter>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>id=${canvas_ids[${index}]}</arg>
+<arg>10s</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-06-15T20:30:29.438442" elapsed="0.043575"/>
+</kw>
+<kw name="Sleep" owner="BuiltIn">
+<msg time="2025-06-15T20:30:30.482936" level="INFO">Slept 1 second.</msg>
+<arg>1s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="PASS" start="2025-06-15T20:30:29.482193" elapsed="1.000871"/>
+</kw>
+<kw name="Capture Element Screenshot" owner="SeleniumLibrary">
+<msg time="2025-06-15T20:30:30.649277" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="bar_graph_3.png"&gt;&lt;img src="bar_graph_3.png" width="400px"&gt;&lt;/a&gt;</msg>
+<arg>id=${canvas_ids[${index}]}</arg>
+<arg>bar_graph_${index+1}.png</arg>
+<doc>Captures a screenshot from the element identified by ``locator`` and embeds it into log file.</doc>
+<status status="PASS" start="2025-06-15T20:30:30.483254" elapsed="0.166300"/>
+</kw>
+<var name="${index}">2</var>
+<status status="PASS" start="2025-06-15T20:30:29.438173" elapsed="1.211536"/>
+</iter>
+<iter>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>id=${canvas_ids[${index}]}</arg>
+<arg>10s</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-06-15T20:30:30.650470" elapsed="0.030269"/>
+</kw>
+<kw name="Sleep" owner="BuiltIn">
+<msg time="2025-06-15T20:30:31.682049" level="INFO">Slept 1 second.</msg>
+<arg>1s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="PASS" start="2025-06-15T20:30:30.681118" elapsed="1.001079"/>
+</kw>
+<kw name="Capture Element Screenshot" owner="SeleniumLibrary">
+<msg time="2025-06-15T20:30:31.856235" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="bar_graph_4.png"&gt;&lt;img src="bar_graph_4.png" width="400px"&gt;&lt;/a&gt;</msg>
+<arg>id=${canvas_ids[${index}]}</arg>
+<arg>bar_graph_${index+1}.png</arg>
+<doc>Captures a screenshot from the element identified by ``locator`` and embeds it into log file.</doc>
+<status status="PASS" start="2025-06-15T20:30:31.682530" elapsed="0.174890"/>
+</kw>
+<var name="${index}">3</var>
+<status status="PASS" start="2025-06-15T20:30:30.650159" elapsed="1.207772"/>
+</iter>
+<var>${index}</var>
+<value>0</value>
+<value>4</value>
+<status status="PASS" start="2025-06-15T20:30:26.997818" elapsed="4.860216"/>
+</for>
+<doc>Extract visible dashboard data and capture chart images</doc>
+<status status="PASS" start="2025-06-15T20:30:23.317363" elapsed="8.540907"/>
+</kw>
+<kw name="Generate Dashboard Report">
+<kw name="Get Current Date" owner="DateTime">
+<msg time="2025-06-15T20:30:31.859541" level="INFO">${timestamp} = 2025-06-15_20-30-31</msg>
+<var>${timestamp}</var>
+<arg>result_format=%Y-%m-%d_%H-%M-%S</arg>
+<doc>Returns current local or UTC time with an optional increment.</doc>
+<status status="PASS" start="2025-06-15T20:30:31.859114" elapsed="0.000483"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-06-15T20:30:31.860177" level="INFO">${output_file} = robot_framework_reports/admin_dashboard_report_2025-06-15_20-30-31.docx</msg>
+<var>${output_file}</var>
+<arg>robot_framework_reports/admin_dashboard_report_${timestamp}.docx</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-06-15T20:30:31.859808" elapsed="0.000426"/>
+</kw>
+<kw name="Create List" owner="BuiltIn">
+<msg time="2025-06-15T20:30:31.860680" level="INFO">${bar_graph_images} = ['bar_graph_1.png', 'bar_graph_2.png', 'bar_graph_3.png', 'bar_graph_4.png']</msg>
+<var>${bar_graph_images}</var>
+<arg>bar_graph_1.png</arg>
+<arg>bar_graph_2.png</arg>
+<arg>bar_graph_3.png</arg>
+<arg>bar_graph_4.png</arg>
+<doc>Returns a list containing given items.</doc>
+<status status="PASS" start="2025-06-15T20:30:31.860434" elapsed="0.000476"/>
+</kw>
+<kw name="Create List" owner="BuiltIn">
+<msg time="2025-06-15T20:30:31.861386" level="INFO">${year_level_names} = ['First Year', 'Second Year', 'Third Year', 'Fourth Year']</msg>
+<var>${year_level_names}</var>
+<arg>First Year</arg>
+<arg>Second Year</arg>
+<arg>Third Year</arg>
+<arg>Fourth Year</arg>
+<doc>Returns a list containing given items.</doc>
+<status status="PASS" start="2025-06-15T20:30:31.861137" elapsed="0.000298"/>
+</kw>
+<kw name="Fill Report Template" owner="docx_writer">
+<arg>robot_framework_reports/report.docx</arg>
+<arg>${output_file}</arg>
+<arg>${category_data}</arg>
+<arg>${status_data}</arg>
+<arg>${bar_graph_images}</arg>
+<arg>${year_level_names}</arg>
+<status status="PASS" start="2025-06-15T20:30:31.861626" elapsed="0.162572"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-06-15T20:30:32.025652" level="INFO">Word report saved to: robot_framework_reports/admin_dashboard_report_2025-06-15_20-30-31.docx</msg>
+<arg>Word report saved to: ${output_file}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-06-15T20:30:32.024963" elapsed="0.000907"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-06-15T20:30:32.026997" level="INFO">Chart images saved as category_chart.png, status_chart.png, and bar graphs (bar_graph_1.png, bar_graph_2.png, bar_graph_3.png, bar_graph_4.png)</msg>
+<arg>Chart images saved as category_chart.png, status_chart.png, and bar graphs (bar_graph_1.png, bar_graph_2.png, bar_graph_3.png, bar_graph_4.png)</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-06-15T20:30:32.026440" elapsed="0.000764"/>
+</kw>
+<doc>Fill template with dashboard data</doc>
+<status status="PASS" start="2025-06-15T20:30:31.858624" elapsed="0.168869"/>
+</kw>
+<kw name="Close All Browsers" owner="SeleniumLibrary" type="TEARDOWN">
+<doc>Closes all open browsers and resets the browser cache.</doc>
+<status status="PASS" start="2025-06-15T20:30:32.028262" elapsed="2.504471"/>
+</kw>
+<doc>Generate dashboard-only admin report with chart images and data</doc>
+<status status="PASS" start="2025-06-15T20:29:56.580592" elapsed="37.952450"/>
+</test>
+<doc>Simple Robot Framework script to generate admin dashboard reports</doc>
+<status status="PASS" start="2025-06-15T20:29:55.986508" elapsed="38.548016"/>
+</suite>
+<statistics>
+<total>
+<stat pass="1" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat name="Simple Admin Report" id="s1" pass="1" fail="0" skip="0">Simple Admin Report</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

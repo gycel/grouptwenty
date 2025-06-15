@@ -13,6 +13,9 @@ from django.db.models import Q, Case, When, IntegerField, Count
 from django.db.models.functions import ExtractYear, ExtractMonth
 from django.contrib.messages import error as messages_error
 from django.db import models
+from django.views.decorators.csrf import csrf_exempt
+import subprocess
+import os
 
 def login_view(request):
     if request.method == 'POST':
@@ -457,7 +460,7 @@ def admin_login(request):
             if user.is_staff or user.is_superuser:
                 login(request, user)
                 messages.success(request, 'Login successful!')
-                return redirect('manage_users')
+                return redirect('admin_dashboard')
             else:
                 messages.warning(request, 'You do not have administrator privileges')
         else:
@@ -562,3 +565,26 @@ def admin_dashboard(request):
         return render(request, 'administrator/admin_dashboard.html', context)
     except Exception as e:
         return HttpResponse(f'Error occurred loading admin dashboard: {e}')
+
+@staff_member_required
+@csrf_exempt
+def generate_admin_report(request):
+    if request.method == "POST":
+        try:
+            # Adjust the command and working directory as needed
+            result = subprocess.run(
+                ["robot", "robot_framework_reports/simple_admin_report.robot"],
+                cwd="C:/xampp/htdocs/grouptwenty",
+                capture_output=True,
+                text=True,
+                shell=True  # For Windows
+            )
+            if result.returncode == 0:
+                messages.success(request, "Report generated successfully!")
+            else:
+                messages.warning(request, f"Report generation failed: {result.stderr} {result.stdout}")
+        except Exception as e:
+            messages.warning(request, f"Error: {str(e)}")
+        return redirect('admin_dashboard')
+    else:
+        return redirect('admin_dashboard')
