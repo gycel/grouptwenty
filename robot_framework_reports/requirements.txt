@@ -1,0 +1,5 @@
+robotframework==7.3
+robotframework-seleniumlibrary==6.7.1
+selenium==4.33.0
+openpyxl==3.1.5
+reportlab==4.4.1 
